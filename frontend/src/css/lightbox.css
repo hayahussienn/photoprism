@@ -40,9 +40,24 @@
     z-index: -1;
 }
 
-.pswp {
-    position: absolute;
+.pswp_button--bw-convert-button {
+  display: inline-flex !important; /* Make sure it shows properly */
+  align-items: center;
+  justify-content: center;
+  width: 45px !important; /* Increase width to fit "B/W" */
+  height: 30px !important;
+  background: rgba(0, 0, 0, 0.5) !important; /* Dark background for contrast */
+  border-radius: 4px; /* Rounded button */
+  text-align: center;
+  font-size: 14px !important;
+  font-weight: bold !important;
+  z-index: 1000 !important; /* Ensure it's on top */
 }
+
+
+
+
+
 
 .p-lightbox__container > .p-lightbox__content {
     position: relative;
