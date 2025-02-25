@@ -40,4 +40,4 @@ jobs:
         with:
           context: .
           push: true
-          tags: hayahussien/photoprism-app:latest
+          tags: hayahussienn/photoprism-app:latest
