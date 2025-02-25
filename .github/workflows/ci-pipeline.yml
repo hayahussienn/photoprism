@@ -10,7 +10,6 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
-
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
@@ -35,9 +34,12 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
+      - name: Set Version
+        run: echo "VERSION=0.0.1" >> $GITHUB_ENV
+
       - name: Build and Push Docker Image
         uses: docker/build-push-action@v4
         with:
           context: .
           push: true
-          tags: hayahussienn/photoprism-app:latest
+          tags: hayahussienn/photoprism-app:${{ env.VERSION }}
