@@ -46,8 +46,9 @@ jobs:
 
       - name: Scan Image with Docker Scout  # ✅ Security Check
         run: |
-          docker scout quickview hayahussienn/photoprism-app:${{ env.VERSION }} --output table
-        continue-on-error: true  # Prevent failing the workflow due to security findings
+          docker scout quickview hayahussienn/photoprism-app:${{ env.VERSION }}
+        continue-on-error: true  # Prevent failing workflow due to vulnerabilities
+
 
       - name: Always Push Docker Image  # ✅ Ensures push even if scan fails
         run: |
