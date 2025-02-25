@@ -44,11 +44,23 @@ jobs:
           push: false  # Build only, scan before pushing
           tags: hayahussienn/photoprism-app:${{ env.VERSION }}
 
+      - name: Install Docker Scout  # ✅ Ensure Docker Scout is installed
+        run: |
+          curl -fsSL https://get.docker.com | sh
+          docker scout --help  # Verify installation
+
+      - name: Enroll Organization in Docker Scout  # ✅ Enable Docker Scout
+        run: |
+          docker scout enroll hayahussienn
+
+      - name: Enable Docker Scout for Repository  # ✅ Enable Docker Scout for repo
+        run: |
+          docker scout repo enable --org hayahussienn hayahussienn/photoprism-app
+
       - name: Scan Image with Docker Scout  # ✅ Security Check
         run: |
-          docker scout quickview hayahussienn/photoprism-app:${{ env.VERSION }}
+          docker scout cves hayahussienn/photoprism-app:${{ env.VERSION }}
         continue-on-error: true  # Prevent failing workflow due to vulnerabilities
-
 
       - name: Always Push Docker Image  # ✅ Ensures push even if scan fails
         run: |
