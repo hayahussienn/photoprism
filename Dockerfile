@@ -4,15 +4,18 @@ FROM photoprism/develop:250217-oracular
 # Set working directory
 WORKDIR "/go/src/github.com/photoprism/photoprism"
 
+# Install Node.js & npm (ensure it's available)
+RUN apt-get update && apt-get install -y nodejs npm
+
 # Copy source code
 COPY . .
 
-# Install dependencies
+# Install dependencies **without forcing audit fix**
 RUN go mod tidy # Ensure Go modules are installed
-RUN cd frontend && npm install && npm audit fix --force # Fix npm security issues
+RUN cd frontend && npm install --legacy-peer-deps # Fix potential dependency conflicts
 
 # Run tests **inside the container**
-RUN make test-js && go test ./internal/...  # Run tests inside Docker build step
+RUN make test-js && go test ./internal/...
 
 # Build the application
 RUN go build -o photoprism ./cmd/photoprism
