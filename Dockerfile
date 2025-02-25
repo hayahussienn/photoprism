@@ -1,30 +1,28 @@
-# Base image (Ubuntu-based with Go)
-FROM golang:1.21 AS build
+# Start with a base image that includes Go 1.23.5
+FROM golang:1.23.5 AS builder
 
-# Set working directory
+# Set working directory inside the container
 WORKDIR /app
 
-# Copy everything
+# Copy source code into the container
 COPY . .
 
 # Install dependencies
-RUN go mod tidy
-RUN cd frontend && npm install
-
-# Run tests
-RUN go test ./internal/... -v
-RUN cd frontend && npm run test
+RUN go mod tidy  # Ensure go modules are installed
+RUN cd frontend && npm install  # Install frontend dependencies
 
 # Build the application
-RUN go build -o photoprism-app
+RUN go build -o myapp ./...
 
-# Use a smaller image for the final app
-FROM ubuntu:24.10
+# Start a new container for the final image
+FROM ubuntu:24.04
 WORKDIR /app
-COPY --from=build /app/photoprism-app .
 
-# Expose port 9090 (change from 8080)
+# Copy the built application from the previous step
+COPY --from=builder /app/myapp .
+
+# Expose the application port
 EXPOSE 9090
 
 # Run the application
-CMD [ "./photoprism-app" ]
+CMD ["./myapp"]

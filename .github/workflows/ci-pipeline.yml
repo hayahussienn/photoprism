@@ -8,17 +8,16 @@ on:
 
 jobs:
   build:
-    name: Build & Test Docker Image
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Set up Go
+      - name: Set up Go 1.23.5
         uses: actions/setup-go@v4
         with:
-          go-version: 1.21
+          go-version: 1.23.5
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
@@ -31,13 +30,10 @@ jobs:
           cd frontend && npm install
 
       - name: Build Docker Image
-        run: |
-          docker build -t photoprism-app .
+        run: docker build -t hayahussienn/photoprism-app .
 
       - name: Run Tests Inside Container
-        run: |
-          docker run --rm photoprism-app make test-js
-          docker run --rm photoprism-app go test ./internal/... -v
+        run: docker run --rm hayahussienn/photoprism-app make test-js && go test ./internal/...
 
       - name: Log in to DockerHub
         uses: docker/login-action@v2
@@ -47,5 +43,6 @@ jobs:
 
       - name: Push Docker Image to DockerHub
         run: |
-          docker tag photoprism-app hayahussienn/photoprism-app:${{ github.run_number }}
+          docker tag hayahussienn/photoprism-app hayahussienn/photoprism-app:${{ github.run_number }}
           docker push hayahussienn/photoprism-app:${{ github.run_number }}
+
