@@ -1,18 +1,18 @@
-# Use base image (make sure it supports Node.js and Go)
+# Use base image
 FROM photoprism/develop:250217-oracular
 
 # Set working directory
 WORKDIR "/go/src/github.com/photoprism/photoprism"
 
-# Install Node.js and npm (for frontend dependencies)
+# Install Node.js and npm
 RUN apt-get update && apt-get install -y nodejs npm
 
 # Copy source code
 COPY . .
 
-# Install dependencies
+# Install dependencies and fix vulnerabilities
 RUN go mod tidy # Ensure Go modules are installed
-RUN cd frontend && npm install # Install frontend dependencies
+RUN cd frontend && npm install && npm audit fix --force # Fix npm security issues
 
 # Build the application
 RUN go build -o photoprism ./cmd/photoprism
