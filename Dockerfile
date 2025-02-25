@@ -22,12 +22,11 @@ RUN mkdir -p /go/src/github.com/photoprism/photoprism/assets \
 # ✅ Set environment variable to ensure assets are recognized
 ENV PHOTOPRISM_ASSETS_PATH="/go/src/github.com/photoprism/photoprism/assets"
 
-# Install dependencies
+# Install dependencies (but do not run tests here)
 RUN go mod tidy # Ensure Go modules are installed
 RUN cd frontend && npm install --legacy-peer-deps  # Fix npm issues
 
-# ✅ Run tests **inside the container**
-RUN make test-js && go test ./internal/...
+# ✅ No tests are run inside the container (they will be run in the workflow)
 
 # Build the application
 RUN go build -o photoprism ./cmd/photoprism
