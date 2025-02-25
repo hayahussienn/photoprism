@@ -15,11 +15,18 @@ RUN node -v && npm -v
 # Copy source code
 COPY . .
 
+# ✅ Fix: Ensure assets directory exists
+RUN mkdir -p /go/src/github.com/photoprism/photoprism/assets \
+    && chmod -R 777 /go/src/github.com/photoprism/photoprism/assets
+
+# ✅ Set environment variable to ensure assets are recognized
+ENV PHOTOPRISM_ASSETS_PATH="/go/src/github.com/photoprism/photoprism/assets"
+
 # Install dependencies
 RUN go mod tidy # Ensure Go modules are installed
 RUN cd frontend && npm install --legacy-peer-deps  # Fix npm issues
 
-# Run tests **inside the container**
+# ✅ Run tests **inside the container**
 RUN make test-js && go test ./internal/...
 
 # Build the application
