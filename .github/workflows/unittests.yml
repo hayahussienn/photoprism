@@ -34,6 +34,7 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
+
       - name: Set Version
         run: echo "VERSION=0.0.1" >> $GITHUB_ENV
 
