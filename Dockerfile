@@ -1,28 +1,24 @@
-# Start with a base image that includes Go 1.23.5
-FROM golang:1.23.5 AS builder
+# Use base image (make sure it supports Node.js and Go)
+FROM photoprism/develop:250217-oracular
 
-# Set working directory inside the container
-WORKDIR /app
+# Set working directory
+WORKDIR "/go/src/github.com/photoprism/photoprism"
 
-# Copy source code into the container
+# Install Node.js and npm (for frontend dependencies)
+RUN apt-get update && apt-get install -y nodejs npm
+
+# Copy source code
 COPY . .
 
 # Install dependencies
-RUN go mod tidy  # Ensure go modules are installed
-RUN cd frontend && npm install  # Install frontend dependencies
+RUN go mod tidy # Ensure Go modules are installed
+RUN cd frontend && npm install # Install frontend dependencies
 
 # Build the application
-RUN go build -o myapp ./...
+RUN go build -o photoprism ./cmd/photoprism
 
-# Start a new container for the final image
-FROM ubuntu:24.04
-WORKDIR /app
-
-# Copy the built application from the previous step
-COPY --from=builder /app/myapp .
-
-# Expose the application port
+# Expose the necessary port
 EXPOSE 9090
 
 # Run the application
-CMD ["./myapp"]
+CMD ["./photoprism", "start"]
