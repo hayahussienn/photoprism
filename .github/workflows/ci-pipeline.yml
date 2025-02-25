@@ -24,6 +24,26 @@ jobs:
           cd frontend
           npm install
 
-      - name: Run JavaScript Tests (make test-js)
+      - name: Run JavaScript Tests
         run: |
           make test-js
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Extract Version Tag
+        id: vars
+        run: |
+          # Extract the version from the latest Git tag
+          VERSION=$(git describe --tags --abbrev=0)
+          echo "VERSION=${VERSION}" >> $GITHUB_ENV
+
+      - name: Build and Push Docker Image
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          push: true
+          tags: hayahussienn/photoprism-app:${{ env.VERSION }}
