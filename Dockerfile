@@ -1,21 +1,30 @@
-# Ubuntu 24.10 (Oracular Oriole)
-FROM photoprism/develop:250217-oracular
+# Base image (Ubuntu-based with Go)
+FROM golang:1.21 AS build
 
-## Alternative Environments:
-# FROM photoprism/develop:armv7    # ARMv7 (32bit)
-# FROM photoprism/develop:oracular # Ubuntu 24.10 (Oracular Oriole)
-# FROM photoprism/develop:noble    # Ubuntu 24.04 LTS (Noble Numbat)
-# FROM photoprism/develop:mantic   # Ubuntu 23.10 (Mantic Minotaur)
-# FROM photoprism/develop:lunar    # Ubuntu 23.04 (Lunar Lobster)
-# FROM photoprism/develop:jammy    # Ubuntu 22.04 LTS (Jammy Jellyfish)
-# FROM photoprism/develop:impish   # Ubuntu 21.10 (Impish Indri)
-# FROM photoprism/develop:bookworm # Debian 12 (Bookworm)
-# FROM photoprism/develop:bullseye # Debian 11 (Bullseye)
-# FROM photoprism/develop:buster   # Debian 10 (Buster)
+# Set working directory
+WORKDIR /app
 
-# Set default working directory.
-WORKDIR "/go/src/github.com/photoprism/photoprism"
-
-# Copy source to image.
+# Copy everything
 COPY . .
-COPY --chown=root:root /scripts/dist/ /scripts/
+
+# Install dependencies
+RUN go mod tidy
+RUN cd frontend && npm install
+
+# Run tests
+RUN go test ./internal/... -v
+RUN cd frontend && npm run test
+
+# Build the application
+RUN go build -o photoprism-app
+
+# Use a smaller image for the final app
+FROM ubuntu:24.10
+WORKDIR /app
+COPY --from=build /app/photoprism-app .
+
+# Expose port 9090 (change from 8080)
+EXPOSE 9090
+
+# Run the application
+CMD [ "./photoprism-app" ]
