@@ -15,23 +15,27 @@ RUN node -v && npm -v
 # Copy source code
 COPY . .
 
-# ✅ Fix: Ensure assets directory exists
+# ✅ Fix: Ensure assets directory exists and download models
 RUN mkdir -p /go/src/github.com/photoprism/photoprism/assets \
-    && chmod -R 777 /go/src/github.com/photoprism/photoprism/assets
+    && chmod -R 777 /go/src/github.com/photoprism/photoprism/assets \
+    && scripts/download-models.sh
 
-# ✅ Set environment variable to ensure assets are recognized
+# ✅ Set environment variables
 ENV PHOTOPRISM_ASSETS_PATH="/go/src/github.com/photoprism/photoprism/assets"
+ENV PHOTOPRISM_HTTP_PORT="9090"
+ENV PHOTOPRISM_HTTP_HOST="0.0.0.0"
 
-# Install dependencies (but do not run tests here)
-RUN go mod tidy # Ensure Go modules are installed
-RUN cd frontend && npm install --legacy-peer-deps  # Fix npm issues
+# Install dependencies
+RUN go mod tidy
+RUN cd frontend && npm install --legacy-peer-deps
 
-# ✅ No tests are run inside the container (they will be run in the workflow)
+# Build the frontend assets
+RUN cd frontend && npm run build
 
 # Build the application
 RUN go build -o photoprism ./cmd/photoprism
 
-# Expose the necessary port
+# Expose port 9090
 EXPOSE 9090
 
 # Run the application
