@@ -81,7 +81,7 @@ jobs:
           rm -rf node_modules package-lock.json
           npm install
 
-      - name: Run JavaScript Tests
+      - name: Run Unittests
         run: |
           make test-js || true
 
