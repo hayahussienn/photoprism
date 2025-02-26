@@ -1,4 +1,4 @@
-name: Unittests and Checkstyle
+name: Tests and Linting
 
 on:
   push:
@@ -7,32 +7,53 @@ on:
       - feature/convert-black-white
 
 jobs:
-  checkstyle:
-    name: Checkstyle
+  lint:
+    name: Code Style Check
     runs-on: ubuntu-latest
-    continue-on-error: true  # This allows the workflow to continue even if this job fails
+    continue-on-error: true  # This allows the workflow to continue even if linting fails
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Set up Java
-        uses: actions/setup-java@v3
+      # Go linting
+      - name: Set up Go
+        uses: actions/setup-go@v4
         with:
-          distribution: 'temurin'
-          java-version: '17'
+          go-version: '1.21'
 
-      - name: Setup Checkstyle
+      - name: Install golangci-lint
         run: |
-          wget https://github.com/checkstyle/checkstyle/releases/download/checkstyle-10.12.5/checkstyle-10.12.5-all.jar -O checkstyle.jar
+          curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v1.55.2
+          golangci-lint --version
 
-      - name: Run Checkstyle
+      - name: Run Go Lint
         run: |
-          java -jar checkstyle.jar -c /google_checks.xml src/ 
-          # The workflow will continue to the next job even if this step fails
+          golangci-lint run ./... --timeout=5m
+
+      # JavaScript linting
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install JS dependencies
+        run: |
+          cd frontend
+          npm install
+
+      - name: Run ESLint
+        run: |
+          cd frontend
+          npx eslint . || true
+
+      - name: Run Prettier
+        run: |
+          cd frontend
+          npx prettier --check . || true
 
   build:
     runs-on: ubuntu-latest
-    needs: checkstyle  # This dependency remains, but due to continue-on-error above, build will run regardless
+    needs: lint  # This dependency remains, but due to continue-on-error above, build will run regardless
 
     steps:
       - name: Checkout Repository
