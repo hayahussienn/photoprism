@@ -15,10 +15,9 @@ RUN node -v && npm -v
 # Copy source code
 COPY . .
 
-# ✅ Fix: Ensure assets directory exists and download models
+# ✅ Fix: Ensure assets directory exists
 RUN mkdir -p /go/src/github.com/photoprism/photoprism/assets \
-    && chmod -R 777 /go/src/github.com/photoprism/photoprism/assets \
-    && scripts/download-models.sh
+    && chmod -R 777 /go/src/github.com/photoprism/photoprism/assets
 
 # ✅ Set environment variables
 ENV PHOTOPRISM_ASSETS_PATH="/go/src/github.com/photoprism/photoprism/assets"
