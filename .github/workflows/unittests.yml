@@ -1,4 +1,4 @@
-name: Unittests
+name: Unittests and Checkstyle
 
 on:
   push:
@@ -7,8 +7,32 @@ on:
       - feature/convert-black-white
 
 jobs:
+  checkstyle:
+    name: Checkstyle
+    runs-on: ubuntu-latest
+    continue-on-error: true  # This allows the workflow to continue even if this job fails
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Setup Checkstyle
+        run: |
+          wget https://github.com/checkstyle/checkstyle/releases/download/checkstyle-10.12.5/checkstyle-10.12.5-all.jar -O checkstyle.jar
+
+      - name: Run Checkstyle
+        run: |
+          java -jar checkstyle.jar -c /google_checks.xml src/ 
+          # The workflow will continue to the next job even if this step fails
+
   build:
     runs-on: ubuntu-latest
+    needs: checkstyle  # This dependency remains, but due to continue-on-error above, build will run regardless
 
     steps:
       - name: Checkout Repository
