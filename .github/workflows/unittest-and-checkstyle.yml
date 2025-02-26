@@ -81,7 +81,7 @@ jobs:
           rm -rf node_modules package-lock.json
           npm install
 
-      - name: Run JavaScript Tests (Ignore Failures)  # ✅ Continue even if 1 test fails
+      - name: Run JavaScript Tests
         run: |
           make test-js || true
 
