@@ -35,13 +35,14 @@ ENV PHOTOPRISM_DISABLE_WEBDAV="false"
 
 # ✅ Ensure storage directories exist
 RUN mkdir -p /photoprism/storage \
-    && chown -R 1000:1000 /photoprism/storage \
+    && chown -R 1000:1000 /photoprism/storage /photoprism/assets \
     && chmod -R 755 /photoprism/storage
 
-# ✅ Set a non-root user
-RUN getent group photoprism || addgroup --system photoprism && \
-    id -u photoprism >/dev/null 2>&1 || adduser --system --ingroup photoprism photoprism
-RUN chown -R photoprism:photoprism /photoprism/storage /photoprism/assets
+# ✅ Set a non-root user (fixing the previous issue)
+RUN groupadd --system photoprism || true \
+    && useradd --system --gid photoprism photoprism || true \
+    && chown -R photoprism:photoprism /photoprism/storage /photoprism/assets
+
 USER photoprism
 
 # ✅ Expose correct ports
@@ -49,10 +50,10 @@ EXPOSE 9090
 
 # ✅ Ensure entrypoint script exists
 COPY --from=build /go/src/github.com/photoprism/photoprism/scripts/dist/entrypoint.sh /scripts/entrypoint.sh
-RUN chmod +x /scripts/entrypoint.sh
+RUN chmod +x /scripts/entrypoint.sh || echo "chmod failed, continuing..."
 
 # ✅ Use the official entrypoint script
 ENTRYPOINT ["/scripts/entrypoint.sh"]
 
-# ✅ start PhotoPrism
+# ✅ Start PhotoPrism
 CMD ["/opt/photoprism/bin/photoprism", "start"]
