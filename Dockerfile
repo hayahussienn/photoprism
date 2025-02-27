@@ -14,6 +14,11 @@ FROM photoprism/develop:oracular-slim
 # Copy built application from build stage
 COPY --from=build --chown=root:root --chmod=755 /opt/photoprism/ /opt/photoprism
 
+# ✅ Ensure assets are available
+RUN mkdir -p /photoprism/assets \
+    && cp -r /opt/photoprism/assets/* /photoprism/assets \
+    && chmod -R 755 /photoprism/assets
+
 # ✅ Set correct environment variables
 ENV PHOTOPRISM_HTTP_PORT="9090"
 ENV PHOTOPRISM_HTTP_HOST="0.0.0.0"
@@ -28,13 +33,22 @@ ENV PHOTOPRISM_UPLOAD_NSFW="true"
 ENV PHOTOPRISM_DISABLE_CHOWN="false"
 ENV PHOTOPRISM_DISABLE_WEBDAV="false"
 
-# ✅ Set correct permissions
+# ✅ Ensure storage directories exist
 RUN mkdir -p /photoprism/storage \
     && chown -R 1000:1000 /photoprism/storage \
     && chmod -R 755 /photoprism/storage
 
+# ✅ Set a non-root user
+RUN addgroup --system photoprism && adduser --system --ingroup photoprism photoprism
+RUN chown -R photoprism:photoprism /photoprism/storage /photoprism/assets
+USER photoprism
+
 # ✅ Expose correct ports
 EXPOSE 9090
+
+# ✅ Ensure entrypoint script exists
+COPY --from=build /go/src/github.com/photoprism/photoprism/scripts/entrypoint.sh /scripts/entrypoint.sh
+RUN chmod +x /scripts/entrypoint.sh
 
 # ✅ Use the official entrypoint script
 ENTRYPOINT ["/scripts/entrypoint.sh"]
