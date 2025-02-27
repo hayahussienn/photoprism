@@ -1,4 +1,4 @@
-name: Unittests and Checkstyle
+name: Unittests, Checkstyle, and Docker Build
 
 on:
   push:
@@ -16,7 +16,7 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      # Go linting
+      # ✅ Go Linting
       - name: Set up Go
         uses: actions/setup-go@v4
         with:
@@ -28,10 +28,9 @@ jobs:
           golangci-lint --version
 
       - name: Run Go Lint
-        run: |
-          golangci-lint run ./... --timeout=5m
+        run: golangci-lint run ./... --timeout=5m
 
-      # JavaScript linting
+      # ✅ JavaScript Linting
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
@@ -60,43 +59,52 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
+      # ✅ Set up Node.js
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 20
 
-      - name: Install Chrome  # ✅ Fix for missing Chrome in CI
+      # ✅ Install Chrome (for frontend tests)
+      - name: Install Chrome
         run: |
           sudo apt-get update
           sudo apt-get install -y google-chrome-stable
 
-      - name: Print Node.js and NPM versions  # ✅ Debugging step
+      - name: Print Node.js and NPM versions
         run: |
           node -v
           npm -v
 
-      - name: Install Dependencies  # ✅ Ensure clean install
+      # ✅ Install Dependencies
+      - name: Install Dependencies
         run: |
           cd frontend
           rm -rf node_modules package-lock.json
           npm install
 
+      # ✅ Run Unittests
       - name: Run Unittests
         run: |
           make test-js || true
 
+      # ✅ Log in to Docker Hub
       - name: Log in to Docker Hub
         uses: docker/login-action@v2
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
+      # ✅ Set Version
       - name: Set Version
         run: echo "VERSION=0.0.2" >> $GITHUB_ENV
 
+      # ✅ Build and Push Docker Image
       - name: Build and Push Docker Image
         uses: docker/build-push-action@v4
         with:
           context: .
           push: true
           tags: hayahussienn/photoprism-app:${{ env.VERSION }}
+
+
