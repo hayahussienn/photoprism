@@ -1,63 +1,43 @@
-# Use base image
-FROM photoprism/develop:250217-oracular
+# Use multi-stage build for better optimization
+FROM photoprism/develop:oracular AS build
 
-# Set working directory
 WORKDIR "/go/src/github.com/photoprism/photoprism"
-
-# Install Node.js & npm properly
-RUN apt-get update && apt-get install -y curl \
-    && curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
-    && apt-get install -y nodejs
-
-# Verify installation
-RUN node -v && npm -v
-
-# Copy source code
 COPY . .
 
-# ✅ Fix: Ensure assets directory exists & set correct ownership
-RUN mkdir -p /go/src/github.com/photoprism/photoprism/assets \
-    && chmod -R 777 /go/src/github.com/photoprism/photoprism/assets \
-    && chown -R 1000:1000 /go/src/github.com/photoprism/photoprism/assets
+# ✅ Use the official build system
+RUN sudo make dep
+RUN sudo make all install DESTDIR=/opt/photoprism
 
-# ✅ Ensure storage directories exist and are writable
-RUN mkdir -p /go/src/github.com/photoprism/photoprism/storage \
-    && chmod -R 777 /go/src/github.com/photoprism/photoprism/storage \
-    && chown -R 1000:1000 /go/src/github.com/photoprism/photoprism/storage
+# ✅ Use a slim production image
+FROM photoprism/develop:oracular-slim
 
-# ✅ Set environment variables
-ENV PHOTOPRISM_ASSETS_PATH="/go/src/github.com/photoprism/photoprism/assets"
-ENV PHOTOPRISM_STORAGE_PATH="/go/src/github.com/photoprism/photoprism/storage"
+# Copy built application from build stage
+COPY --from=build --chown=root:root --chmod=755 /opt/photoprism/ /opt/photoprism
+
+# ✅ Set correct environment variables
 ENV PHOTOPRISM_HTTP_PORT="9090"
 ENV PHOTOPRISM_HTTP_HOST="0.0.0.0"
-
-# ✅ Additional required environment variables
+ENV PHOTOPRISM_DATABASE_DRIVER="sqlite"
+ENV PHOTOPRISM_DATABASE_NAME="photoprism"
+ENV PHOTOPRISM_STORAGE_PATH="/photoprism/storage"
+ENV PHOTOPRISM_ASSETS_PATH="/photoprism/assets"
 ENV PHOTOPRISM_PUBLIC="false"
 ENV PHOTOPRISM_READONLY="false"
-ENV PHOTOPRISM_DATABASE_DRIVER="sqlite"
-ENV PHOTOPRISM_DATABASE_NAME="photoprism.db"
-ENV PHOTOPRISM_UPLOAD_NSFW="true"
-ENV PHOTOPRISM_DETECT_NSFW="false"
-ENV PHOTOPRISM_EXPERIMENTAL="true"
 ENV PHOTOPRISM_SITE_URL="http://localhost:9090/"
-ENV PHOTOPRISM_DEBUG="true"
-ENV PHOTOPRISM_LOG_LEVEL="debug"
+ENV PHOTOPRISM_UPLOAD_NSFW="true"
+ENV PHOTOPRISM_DISABLE_CHOWN="false"
+ENV PHOTOPRISM_DISABLE_WEBDAV="false"
 
-# ✅ Install Go dependencies before building
-RUN go mod tidy
-RUN go mod download
+# ✅ Set correct permissions
+RUN mkdir -p /photoprism/storage \
+    && chown -R 1000:1000 /photoprism/storage \
+    && chmod -R 755 /photoprism/storage
 
-# ✅ Install frontend dependencies safely
-RUN cd frontend && npm install --legacy-peer-deps
-
-# ✅ Build the frontend assets
-RUN cd frontend && npm run build
-
-# ✅ Build the Go application
-RUN go build -o photoprism ./cmd/photoprism
-
-# Expose port 9090
+# ✅ Expose correct ports
 EXPOSE 9090
 
-# ✅ Initialize database & start
-CMD ["./photoprism", "migrate", "start"]
+# ✅ Use the official entrypoint script
+ENTRYPOINT ["/scripts/entrypoint.sh"]
+
+# ✅ Start PhotoPrism
+CMD ["/opt/photoprism/bin/photoprism", "start"]
