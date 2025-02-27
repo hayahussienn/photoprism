@@ -47,7 +47,7 @@ USER photoprism
 EXPOSE 9090
 
 # ✅ Ensure entrypoint script exists
-COPY --from=build /go/src/github.com/photoprism/photoprism/scripts/entrypoint.sh /scripts/entrypoint.sh
+COPY --from=build /go/src/github.com/photoprism/photoprism/scripts/dist/entrypoint.sh /scripts/entrypoint.sh
 RUN chmod +x /scripts/entrypoint.sh
 
 # ✅ Use the official entrypoint script
