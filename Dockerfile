@@ -39,7 +39,8 @@ RUN mkdir -p /photoprism/storage \
     && chmod -R 755 /photoprism/storage
 
 # ✅ Set a non-root user
-RUN addgroup --system photoprism && adduser --system --ingroup photoprism photoprism
+RUN getent group photoprism || addgroup --system photoprism && \
+    id -u photoprism >/dev/null 2>&1 || adduser --system --ingroup photoprism photoprism
 RUN chown -R photoprism:photoprism /photoprism/storage /photoprism/assets
 USER photoprism
 
