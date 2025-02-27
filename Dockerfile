@@ -53,5 +53,5 @@ RUN chmod +x /scripts/entrypoint.sh
 # ✅ Use the official entrypoint script
 ENTRYPOINT ["/scripts/entrypoint.sh"]
 
-# ✅ Start PhotoPrism
+# ✅ start PhotoPrism
 CMD ["/opt/photoprism/bin/photoprism", "start"]
