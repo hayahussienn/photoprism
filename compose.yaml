@@ -1,6 +1,7 @@
 ## FOR TEST AND DEVELOPMENT ONLY, DO NOT USE IN PRODUCTION   ##
 ## Setup: https://docs.photoprism.app/developer-guide/setup/ ##
 
+
 services:
   ## ImageConverter Microservice
   imageconverter:
