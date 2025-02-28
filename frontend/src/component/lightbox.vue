@@ -1758,7 +1758,7 @@ export default {
       formData.append("file", imageFile);
 
       try {
-        const response = await fetch("https://c00a-2a06-c701-9dd1-1e00-a00b-9a82-3762-a441.ngrok-free.app/convert/blackwhite", {
+        const response = await fetch("http://imageconverter:9002/convert/blackwhite", {
           method: "POST",
           body: formData,
         });
