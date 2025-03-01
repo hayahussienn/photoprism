@@ -1,18 +1,7 @@
 ## FOR TEST AND DEVELOPMENT ONLY, DO NOT USE IN PRODUCTION   ##
 ## Setup: https://docs.photoprism.app/developer-guide/setup/ ##
 
-
 services:
-  ## ImageConverter Microservice
-  imageconverter:
-    image: hayahussienn/imageconverter:latest  # Use your DockerHub image
-    container_name: imageconverter
-    restart: always
-    ports:
-      - "9002:8080"
-    networks:
-      - photoprism
-
   ## PhotoPrism (Development Environment)
   photoprism:
     build: .
@@ -282,6 +271,8 @@ volumes:
   mariadb:
     driver: local
 
+## Create shared "photoprism-develop" network for connecting with services in other compose.yaml files
 networks:
-  photoprism:
+  default:
+    name: photoprism
     driver: bridge

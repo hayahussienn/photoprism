@@ -1758,10 +1758,11 @@ export default {
       formData.append("file", imageFile);
 
       try {
-        const response = await fetch("http://imageconverter:8080/convert/blackwhite", {
+        const response = await fetch("http://localhost:8080/convert/blackwhite", {
           method: "POST",
           body: formData,
         });
+
 
         const data = await response.json();
 
