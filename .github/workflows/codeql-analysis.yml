@@ -5,9 +5,7 @@ on:
     branches:
       - develop
       - feature/convert-black-white
-  pull_request:
-    branches:
-      - develop  # ✅ Ensures CodeQL runs on PRs to develop
+
   schedule:
     - cron: '0 0 * * 1'  # ✅ Runs every Monday at midnight UTC
 
