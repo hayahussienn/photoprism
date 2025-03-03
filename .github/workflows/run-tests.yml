@@ -1,8 +1,8 @@
 name: Run PhotoPrism Tests
 on:
-  push:
+  pull_request:
     branches:
-      - feature/convert-black-white
+      - develop
 
 
 permissions:
