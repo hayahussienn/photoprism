@@ -17,28 +17,29 @@ describe("common/clipboard", () => {
     assert.equal(clipboard.selection, "");
   });
 
-  it("should toggle model", () => {
-    const storage = new StorageShim();
-    const key = "clipboard";
+      it("should toggle model", () => {
+        const storage = new StorageShim();
+        const key = "clipboard";
 
-    const clipboard = new Clipboard(storage, key);
-    clipboard.clear();
-    clipboard.toggle();
-    assert.equal(clipboard.storageKey, "clipboard");
-    assert.equal(clipboard.selection, "");
+        const clipboard = new Clipboard(storage, key);
+        clipboard.clear();
+        clipboard.toggle();
+        assert.equal(clipboard.storageKey, "clipboard");
+        assert.equal(clipboard.selection, "");
 
-    const values = { ID: 5, UID: "ABC123", Title: "Crazy Cat" };
-    const photo = new Photo(values);
-    clipboard.toggle(photo);
-    assert.equal(clipboard.selection[0], "ABC123");
-    const values2 = { ID: 8, UID: "ABC124", Title: "Crazy Cat" };
-    const photo2 = new Photo(values2);
-    clipboard.toggle(photo2);
-    assert.equal(clipboard.selection[0], "ABC123");
-    assert.equal(clipboard.selection[1], "ABC124");
-    clipboard.toggle(photo);
-    assert.equal(clipboard.selection[0], "ABC124");
-  });
+        const values = { ID: 5, UID: "ABC123", Title: "Crazy Cat" };
+        const photo = new Photo(values);
+        clipboard.toggle(photo);
+        assert.equal(clipboard.selection[0], "ABC123");
+        const values2 = { ID: 8, UID: "ABC124", Title: "Crazy Cat" };
+        const photo2 = new Photo(values2);
+        clipboard.toggle(photo2);
+        assert.equal(clipboard.selection[0], "ABC123");
+        assert.equal(clipboard.selection[1], "ABC124");
+        clipboard.toggle(photo);
+        assert.equal(clipboard.selection[0], "ABC124");
+      });
+
 
   it("should toggle id", () => {
     const storage = new StorageShim();

@@ -1137,6 +1137,36 @@ export default {
             onClick: (ev) => this.onControlClick(ev, this.onEdit),
           });
         }
+      // Add Black and White Convert Button
+      lightbox.pswp.ui.registerElement({
+        name: "bw-convert-button",
+        className: "pswp_button--bw-convert-button pswp_button--mdi",
+        ariaLabel: this.$gettext("Convert to Black & White"),
+        order: 11,
+        isButton: true,
+        html: {
+          isCustomSVG: true,
+          inner: `
+            <svg width="30" height="24" viewBox="0 0 30 24">
+              <text x="15" y="16" font-size="12" font-weight="bold" fill="white"
+                    text-anchor="middle" dominant-baseline="middle">B / W</text>
+            </svg>`,
+          outlineID: "pswp__icn-bw-convert",
+          size: 30, // Adjust size to give text more space
+        },
+        onClick: (ev) => this.onControlClick(ev, this.onConvertToBlackAndWhite),
+      });
+
+
+
+
+
+
+
+
+
+
+
 
         // Add download button control if user has permission to use it.
         if (this.canDownload) {
@@ -1722,6 +1752,101 @@ export default {
         this.$event.publish("dialog.edit", { selection, album, index });
       });
     },
+
+    async uploadAndConvertImage(imageFile) {
+      const formData = new FormData();
+      formData.append("file", imageFile);
+
+      try {
+        const response = await fetch("http://localhost:8080/convert/blackwhite", {
+          method: "POST",
+          body: formData,
+        });
+
+
+
+        const data = await response.json();
+
+        if (data.success) {
+          return data.convertedImageUrl; // Return the new image URL
+        } else {
+          console.error("Conversion failed:", data.error);
+          return null;
+        }
+      } catch (error) {
+        console.error("Error communicating with the microservice:", error);
+        return null;
+      }
+    },
+
+    async onConvertToBlackAndWhite() {
+      const pswp = this.pswp();
+      if (!pswp) return;
+
+      const img = pswp.currSlide?.container?.querySelector(".pswp__img");
+
+      if (!img) {
+        console.warn("No image found to convert.");
+        return;
+      }
+
+      // Convert image to file (fetching from URL)
+      fetch(img.src)
+        .then((res) => res.blob())
+        .then(async (blob) => {
+          const file = new File([blob], "image.jpg", { type: "image/jpeg" });
+
+          // Send image to the microservice
+          const convertedImageUrl = await this.uploadAndConvertImage(file);
+
+          if (convertedImageUrl) {
+            // Open a pop-up with the converted image
+            const newWindow = window.open("", "_blank");
+            if (newWindow) {
+              newWindow.document.write(`
+                <html>
+                  <head>
+                    <title>Converted Image</title>
+                    <style>
+                      body {
+                        display: flex;
+                        flex-direction: column;
+                        align-items: center;
+                        justify-content: center;
+                        height: 100vh;
+                        background: black;
+                        color: white;
+                        text-align: center;
+                      }
+                      h2 {
+                        margin-bottom: 10px;
+                      }
+                      img {
+                        max-width: 100%;
+                        max-height: 80vh;
+                        border: 5px solid white;
+                      }
+                    </style>
+                  </head>
+                  <body>
+                    <h2>Black & White Image</h2>
+                    <img src="${convertedImageUrl}">
+                  </body>
+                </html>
+              `);
+              newWindow.document.close();
+            }
+          } else {
+            alert("Failed to convert image. Please try again.");
+          }
+        })
+        .catch((error) => console.error("Error fetching image for conversion:", error));
+    },
+
+
+
+
+
     resize(force) {
       this.$nextTick(() => {
         if (this.visible && this.getContentElement() && !this.isBusy("resize")) {
