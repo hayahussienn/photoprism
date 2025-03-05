@@ -6,6 +6,7 @@ on:
       - develop
       - feature/convert-black-white
 
+
 jobs:
   lint:
     name: Code Style Check
